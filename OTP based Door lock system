@@ -1,0 +1,150 @@
+#include<Servo.h>
+#include <SoftwareSerial.h>
+
+int servoPin = 8; 
+int ir = 7;
+int vib = 6;
+int led = 5;
+int sw = 12;
+String id;
+String data="hai";
+String pwd;
+String otp="";
+String letter[4] = {"wise", "hello","hai", "bye" };
+String number[2] = {"2021","2345"};
+
+Servo Servo1;
+SoftwareSerial mySerial(10, 9);
+int Tx= 9;
+int Rx= 10;
+
+void setup() 
+{
+  Servo1.attach(servoPin);
+  Serial.begin(9600);
+  mySerial.begin(9600);
+  pinMode(ir,INPUT);
+  pinMode(vib,INPUT);
+  pinMode(led,OUTPUT);
+  pinMode(sw,INPUT_PULLUP);
+}
+
+void loop()
+{
+//  while(Serial.available()==0){
+//  id=Serial.readStringUntil('\n');
+//Serial.println(id);
+
+  if (digitalRead(sw)==0)
+  {
+    Serial.println("OTP verified");
+    ottp();
+    digitalWrite(led,HIGH);
+    check();
+  }
+  
+
+// int ir_val=digitalRead(ir);
+ else if(digitalRead(ir)==1)
+ {
+  Serial.println("Someone at Door");
+  for(int i=0;i<5;i++)
+  {
+  digitalWrite(led,HIGH);
+  delay(500);
+  digitalWrite(led,LOW);
+  delay(500);
+  }
+  sendsms_1();
+ }
+
+  else if(digitalRead(vib)==0)
+ {
+  Serial.println("Someone Trying to Break Door");
+  for(int i=0;i<5;i++)
+  {
+  digitalWrite(led,HIGH);
+  delay(500);
+  digitalWrite(led,LOW);
+  delay(500);
+  }
+  sendsms_2();
+ }
+}
+
+void ottp()
+{
+otp = letter[random(0,4)] + number[random(0,2)];
+Serial.println(otp+"\n");
+}
+
+void check()
+{
+while(Serial.available()==0);
+pwd=Serial.readStringUntil('\n');
+Serial.println(pwd);
+  if (pwd==otp)
+  {
+    Serial.println("Password Verified: Door Opening");
+    digitalWrite(led, HIGH);
+    delay(500);
+    Servo1.write(360);
+    delay(1000);
+    Servo1.write(0);
+  }
+
+ if (pwd!=otp)
+  {
+    Serial.println("Wrong Password ...Try Again");
+    digitalWrite(led, LOW);
+  }
+}
+
+void sendsms_1()
+  {
+    mySerial.println("AT");
+    delay(1000);
+    //Serial.println("ATD+919121991303;");
+    //Serial.println("ATEO");
+    //delay(1000);
+    mySerial.println("AT+CMGF=1");
+    Serial.println("AT+CMGF=1");
+    delay(1000);
+    mySerial.println("AT+CMGS=\"+919010900731\"\r");
+    Serial.println("AT+CMGS=\"+919010900731\"\r");
+    delay(1000);
+   mySerial.println("Someone at Door");
+   Serial.println("Someone at Door");
+//    delay(10);
+//   mySerial.println( link);
+    delay(100);
+    //Serial.write(26);
+    mySerial.println((char)26); // ASCII code of CTRL+Z
+    delay(1000);
+   Serial.println("msg send");
+  }
+
+
+void sendsms_2()
+  {
+    mySerial.println("AT");
+    delay(1000);
+    //Serial.println("ATD+919121991303;");
+    //Serial.println("ATEO");
+    //delay(1000);
+    mySerial.println("AT+CMGF=1");
+    Serial.println("AT+CMGF=1");
+    delay(1000);
+    mySerial.println("AT+CMGS=\"+919010900731\"\r");
+    Serial.println("AT+CMGS=\"+919010900731\"\r");
+    delay(1000);
+   mySerial.println("Someone trying to break Door");
+   Serial.println("Someone trying to break Door");
+//    delay(10);
+//   mySerial.println( link);
+    delay(100);
+    //Serial.write(26);
+    mySerial.println((char)26); // ASCII code of CTRL+Z
+    delay(1000);
+   Serial.println("msg send");
+  }
